@@ -1,4 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/Twitter');
+
 const userRouter = require('./api/users');
 const tweetRouter = require('./api/tweets');
 

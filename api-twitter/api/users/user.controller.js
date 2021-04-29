@@ -1,105 +1,94 @@
 const fs = require('fs');
+const USER = require('./user.model');
+
 
 var users = [];
 
 const postUsers = (req,res) => {
-    loadDb();
     const user = req.body;
-
-    let exist = users.filter(usuario => {
-        if(usuario.userName == user.userName || usuario.email == user.email){
-            return usuario;
-        }
-
-    });
-
-    if(exist.length == 0){
-        console.log("Va bien la cosa");
-        if(typeof user.userName !== 'undefined' && user.userName != ''){
-            if(typeof user.email !== 'undefined' && user.email != ''){
-                users.push(user);
-                fs.writeFileSync('./db.json',JSON.stringify(users));
-                return res.status(200).json(user);
-            } else {
-                return res.status(400).send('The email is undefined');
+    USER.create(user)
+        .then(doc => {
+            return res.status(201).json(doc);
+        })
+        .catch(error => {
+            if(error.code === 11000){
+                return res.status(400).send('This user just exist');
+            } else if(error.errors?.userName?.message === 'The userName is required'){
+                return res.status(404).send(error.errors.userName.message);
+            } else if(error.errors?.email?.message === 'The email is required'){
+                return res.status(404).send(error.errors.email.message);
             }
-        } else {
-            return res.status(400).send('The userName is undefined');
-        }
-    }
-
-    return res.status(400).send('This user is already exist');
+        });
 }
 
 const deleteUser = (req,res) => {
-    loadDb();
     const username = req.params.userName;
-    const user = users.find(user => user.userName == username);
+   
+    //Falta conectar con tweets
+    USER.deleteOne({userName:username})
+        .then(doc => {
+            let resp = tweetsController.deleteTweets(username)
+            if(doc?.deletedCount > 0){
+                return res.status(200).json(doc);
+            }
 
-    if(user){
-        users = users.filter(user => user.userName != username);
-        tweetsController.deleteTweets(user.userName);
-        console.log(users);
-        fs.writeFileSync('./db.json',JSON.stringify(users));
-        return res.status(200).json(user);
-    }
-
-    return res.status(404).send('This user not exist');
+            return resp;
+        })
+        .then(resp => {
+            if (resp !== 'OK'){
+                res.status(404).send(resp);
+            }
+            return res.status(200).json(doc);
+        })
+        
 }
 
 const userPatch = (req,res) => {
-    loadDb();
     const username = req.params.userName;
     const usuario = req.body;
 
-    const user = users.find(user => user.userName == username);
-    console.log(user);
-
-    if(user){
-       
-        if(typeof usuario.email !== 'undefined'){
-            user.email = usuario.email;
-        }
-    
-        if(typeof usuario.name !== 'undefined'){
-            user.name = usuario.name;
-        }
-        
-        fs.writeFileSync('./db.json',JSON.stringify(users));
-        return res.status(200).json(user);
-    }
-
-    return res.status(404).send('This user not exist');
+    USER.updateOne({userName:usuario.userName},{name:usuario.userName, email:usuario.email})
+        .then(doc => res.status(202).json(doc))
+        .catch(error => {
+            if(error === 'The userName just exist'){
+                return res.status(400).send(error);
+            } else if(error === 'The userName is required'){
+                return res.status(404).send(error);
+            } else {
+                return res.status(404).send(error);
+            }
+        })
 }
 
-const loadDb = () => {
-    users = JSON.parse(fs.readFileSync('./db.json'));
-}
-
-const putTweet = (tweet,owner) => {
-    loadDb();
-
-    user = users.find(user => user.userName == owner);
-    user.tweets.push(tweet);
-
-    fs.writeFileSync('./db.json',JSON.stringify(users));
+//Para el final xd
+const addTweetToUser = async (id,owner) => {
+    console.log(id);
+    //let tweets = [id];
+    await USER.updateOne({userName:owner},{$set: {tweetsId:tweets}})
+    .then(doc => {
+        console.log(doc);
+        return res.status(200).json(doc);
+    })
+    .catch(error => {
+        return res.status(404).send('This user not found');
+    })
 }
 
 const deleteTweet = (owner,id) => {
-    loadDb();
-
-    user = users.find(user => user.userName == owner);
-    let tweets = user.tweets;
-    user.tweets = tweets.filter(tweet => tweet != id);
-
-    fs.writeFileSync('./db.json',JSON.stringify(users));
+    USER.updateOne({userName:owner},{$set: {tweetsId:tweetsId.filter(tweet => tweet.id != id)}})
+    .then(doc => {
+        return res.status(200).json(doc);
+    })
+    .catch(error => {
+        return res.status(404).send('This user not found');
+    })
 }
 
 module.exports = {
     postUsers,
     deleteUser,
     userPatch,
-    putTweet,
+    addTweetToUser,
     deleteTweet
 };
 
