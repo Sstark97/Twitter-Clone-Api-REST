@@ -1,10 +1,6 @@
 const TWEET = require('./tweets.model');
 const USER = require('../users/user.model');
 
-var tweets = [];
-var users = [];
-
-
 //POST que sube un tweet por parte de un usuario
 const postTweet = async (req,res) => {
 
@@ -14,7 +10,6 @@ const postTweet = async (req,res) => {
 
     TWEET.create(tweet)
         .then(doc => {
-            //userController.addTweetToUser(tweet._id,tweet.owner)
             let exist = user.tweetsId.find(id => id == doc._id);
             user.tweetsId.push(doc._id);
             user.save()
@@ -51,12 +46,10 @@ const deleteTweet = (req,res) => {
 
     TWEET.findOneAndDelete({_id:id})
         .then(async doc => {
-            //userController.deleteTweet(doc.owner,id);
             let owner = doc.owner;
             const user = await USER.findOne({userName:owner});
             user.tweetsId = user.tweetsId.filter(tweet => tweet != String(doc._id));
-            
-            //console.log(user.tweetsId.filter(tweetId => tweetID != id));
+        
             user.save();
             return res.status(202).json(doc);
         })

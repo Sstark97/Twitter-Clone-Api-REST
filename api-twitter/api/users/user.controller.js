@@ -1,8 +1,4 @@
-const fs = require('fs');
 const USER = require('./user.model');
-
-
-var users = [];
 
 const postUsers = (req,res) => {
     const user = req.body;
@@ -60,10 +56,7 @@ const userPatch = (req,res) => {
         })
 }
 
-//Para el final xd
 const addTweetToUser = async (id,owner) => {
-    console.log(id);
-    //let tweets = [id];
     await USER.updateOne({userName:owner},{$set: {tweetsId:tweets}})
     .then(doc => {
         console.log(doc);
