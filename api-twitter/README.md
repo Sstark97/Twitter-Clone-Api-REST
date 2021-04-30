@@ -3,7 +3,7 @@
 ------------
 
 ## Description
-This is a simple version of the API-restfull of Twitter. In these case without any database. In these case I use fs module to simulate my db. I have two JSON's files, the db.json(I push here my users), and the tweets.json(Here you have the tweets). I create the server on port 5000. I support my api with two routers and two controllers.
+This is a simple version of the API-restfull of Twitter. In these case without any database. In these case I use mongoose for my db. I create the server on port 5000. I support my api with two routers and two controllers.
 
 #### Users Structure
 ```json
