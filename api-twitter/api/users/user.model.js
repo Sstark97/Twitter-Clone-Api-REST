@@ -13,7 +13,10 @@ const USERschema = mongoose.Schema({
         type: String,
         required: [true, 'The email is required']
     },
-    tweetsId: [String]
+    tweetsId: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'tweet',
+    }]
 });
 
 const USER = mongoose.model('user', USERschema);
