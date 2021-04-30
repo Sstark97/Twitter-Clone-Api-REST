@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const userController = require('./user.controller');
 
+//GET que busque usuario
+router.get('/:userName',userController.getUser);
+
 //POST que añade usuarios
 router.post('/', userController.postUsers);
 

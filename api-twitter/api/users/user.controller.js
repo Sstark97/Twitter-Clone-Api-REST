@@ -1,5 +1,35 @@
 const USER = require('./user.model');
 
+const getUser = (req,res) => {
+    const owner = req.params.userName;
+    const { projected } = req.query;
+
+    if(projected){
+        USER.findOne({userName:owner})
+            .populate('tweetsId')
+            .select({ tweetsId : { $slice : -10}})
+            .then(doc => {
+                if(typeof doc !== 'null'){
+                    return res.status(200).json(doc);
+                }
+                return res.status(404).send('This user not have tweets');
+            })
+            .catch(error => res.status(404).send(error));
+    } else {
+        USER.findOne({userName:owner})
+        .then(doc => {
+            if(typeof doc !== 'null'){
+                return res.status(200).json(doc);
+            }
+            return res.status(404).send('This user not exist');
+        })
+        .catch(error => res.status(404).send(error));
+    }
+
+    
+        
+}
+
 const postUsers = (req,res) => {
     const user = req.body;
     USER.create(user)
@@ -82,7 +112,8 @@ module.exports = {
     deleteUser,
     userPatch,
     addTweetToUser,
-    deleteTweet
+    deleteTweet,
+    getUser
 };
 
 const tweetsController =  require('../tweets/tweets.controller');

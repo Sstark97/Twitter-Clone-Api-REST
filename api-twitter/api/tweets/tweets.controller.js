@@ -10,9 +10,9 @@ const postTweet = async (req,res) => {
 
     TWEET.create(tweet)
         .then(doc => {
-            let exist = user.tweetsId.find(id => id == doc._id);
+            //let exist = user.tweetsId.find(id => id == doc._id);
             user.tweetsId.push(doc._id);
-            user.save()
+            user.save();
             
             return res.status(201).json(doc);
         })
@@ -37,6 +37,18 @@ const getTweet = (req,res) =>  {
             return res.status(404).send('This tweet not exist');
         });
 
+}
+
+const getTweets = (req,res) => {
+    const {_limit, _skip} = req.query;
+
+    TWEET.find()
+        .limit(+_limit)
+        .skip(+_skip)
+        .then(doc => res.status(200).json(doc))
+        .catch(error => {
+            return res.status(404).send('This tweet not exist');
+        });
 }
 
 
@@ -76,7 +88,8 @@ module.exports = {
     postTweet,
     getTweet,
     deleteTweet,
-    deleteTweets
+    deleteTweets,
+    getTweets
 }
 
 const userController = require('../users/user.controller')
